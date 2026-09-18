@@ -7,7 +7,7 @@
 
 [1] PRE-INSTALLATION & SYSTEM CLOCK
 ----------------------------------------------------------------------
-ping -c 3 google.com
+ping google.com
 timedatectl set-ntp true
 
 [2] STORAGE PARTITIONING (UEFI / GPT)
@@ -53,61 +53,7 @@ passwd
 ----------------------------------------------------------------------
 useradd -m -G wheel -s /bin/bash your_username
 passwd your_username
-
-# Uncomment the line: %wheel ALL=(ALL:ALL) ALL======================================================================
-  ILTECHS: ARCH LINUX MANUAL INSTALLATION GUIDE COMMAND SHEET
-  Video Title: How to Install Arch Linux and Set Up a Full GNOME Desktop Safely
-  Presented by: Debjit | Always Learn Something New
-======================================================================
-
-[1] PRE-INSTALLATION & SYSTEM CLOCK
-----------------------------------------------------------------------
-ping -c 3 google.com
-timedatectl set-ntp true
-
-[2] STORAGE PARTITIONING (UEFI / GPT)
-----------------------------------------------------------------------
-lsblk
-cfdisk /dev/sda  # (Replace sda with your drive name)
-
-* Partition Layout:
-  -> /dev/sda1 : 512M or 1G (Type: EFI System Partition)
-  -> /dev/sda2 : 4G          (Type: Linux Swap)
-  -> /dev/sda3 : Remainder   (Type: Linux Filesystem)
-
-[3] FORMATTING & MOUNTING FILE SYSTEMS
-----------------------------------------------------------------------
-mkfs.fat -F 32 /dev/sda1
-mkswap /dev/sda2
-swapon /dev/sda2
-mkfs.ext4 /dev/sda3
-
-mount /dev/sda3 /mnt
-mount --mkdir /dev/sda1 /mnt/boot/efi
-
-[4] PACSTRAP CORE & GUI PACKAGES
-----------------------------------------------------------------------
-pacstrap -K /mnt base base-devel linux linux-firmware nano grub efibootmgr networkmanager xorg gnome gnome-extra gdm git gnome-tweaks extension-manager
-
-[5] SYSTEM CONFIGURATION (CHROOT ENVIRONMENT)
-----------------------------------------------------------------------
-genfstab -U /mnt >> /mnt/etc/fstab
-arch-chroot /mnt
-
-ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
-hwclock --systohc
-
-# Open locale generator and uncomment: en_US.UTF-8 UTF-8
-nano /etc/locale.gen
-locale-gen
-
-echo iltechs-arch > /etc/hostname
-passwd
-
-[6] USER CONFIGURATION & SUDO PRIVILEGES
-----------------------------------------------------------------------
-useradd -m -G wheel -s /bin/bash your_username
-passwd your_username
+usermod -aG wheel your_username
 
 # Uncomment the line: %wheel ALL=(ALL:ALL) ALL
 EDITOR=nano visudo
@@ -117,7 +63,7 @@ EDITOR=nano visudo
 nano /etc/gdm/custom.conf
 
 * Add these lines under the [daemon] block:
-AutomaticLoginEnable=true
+AutomaticLoginEnable=false
 AutomaticLogin=your_username
 
 [8] BOOTLOADER SETUP & FINAL REBOOT
@@ -133,25 +79,3 @@ umount -R /mnt
 reboot
 ======================================================================
 
-EDITOR=nano visudo
-
-[7] GDM AUTOMATIC LOGIN CONFIGURATION
-----------------------------------------------------------------------
-nano /etc/gdm/custom.conf
-
-* Add these lines under the [daemon] block:
-AutomaticLoginEnable=true
-AutomaticLogin=your_username
-
-[8] BOOTLOADER SETUP & FINAL REBOOT
-----------------------------------------------------------------------
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
-grub-mkconfig -o /boot/grub/grub.cfg
-
-systemctl enable gdm
-systemctl enable NetworkManager
-
-exit
-umount -R /mnt
-reboot
-======================================================================
